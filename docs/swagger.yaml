@@ -1,0 +1,839 @@
+basePath: /api/v1
+definitions:
+  models.CreateTransactionRequest:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/models.TransactionItem'
+        minItems: 1
+        type: array
+    required:
+    - items
+    type: object
+  models.Customer:
+    properties:
+      address:
+        type: string
+      birthdate:
+        type: string
+      email:
+        type: string
+      fullname:
+        type: string
+      id:
+        type: string
+      password:
+        minLength: 6
+        type: string
+      phoneNumber:
+        type: string
+      role:
+        description: '"customer" or "admin"'
+        type: string
+    required:
+    - address
+    - birthdate
+    - email
+    - fullname
+    - password
+    - phoneNumber
+    type: object
+  models.CustomerResponse:
+    properties:
+      address:
+        type: string
+      birthdate:
+        type: string
+      email:
+        type: string
+      fullname:
+        type: string
+      id:
+        type: string
+      phoneNumber:
+        type: string
+      role:
+        type: string
+    type: object
+  models.ErrorResponse:
+    properties:
+      error:
+        type: string
+      message:
+        type: string
+    type: object
+  models.LoginRequest:
+    properties:
+      email:
+        maxLength: 254
+        type: string
+      password:
+        maxLength: 72
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  models.LoginResponse:
+    properties:
+      customer:
+        $ref: '#/definitions/models.CustomerResponse'
+      expiresIn:
+        type: integer
+      token:
+        type: string
+      tokenType:
+        type: string
+    type: object
+  models.PaginatedResponse:
+    properties:
+      data: {}
+      page:
+        type: integer
+      pageSize:
+        type: integer
+      totalItems:
+        type: integer
+      totalPages:
+        type: integer
+    type: object
+  models.Product:
+    properties:
+      id:
+        type: string
+      productName:
+        type: string
+      productPrice:
+        minimum: 0
+        type: number
+      stock:
+        minimum: 0
+        type: integer
+    required:
+    - productName
+    - productPrice
+    - stock
+    type: object
+  models.ProductRequest:
+    properties:
+      productName:
+        maxLength: 200
+        type: string
+      productPrice:
+        type: number
+      stock:
+        minimum: 0
+        type: integer
+    required:
+    - productName
+    type: object
+  models.RegisterRequest:
+    properties:
+      address:
+        maxLength: 500
+        type: string
+      birthdate:
+        type: string
+      email:
+        maxLength: 254
+        type: string
+      fullname:
+        maxLength: 100
+        type: string
+      password:
+        maxLength: 72
+        minLength: 8
+        type: string
+      phoneNumber:
+        maxLength: 30
+        type: string
+    required:
+    - address
+    - birthdate
+    - email
+    - fullname
+    - password
+    - phoneNumber
+    type: object
+  models.SuccessResponse:
+    properties:
+      data: {}
+      message:
+        type: string
+    type: object
+  models.Transaction:
+    properties:
+      customer:
+        $ref: '#/definitions/models.Customer'
+      id:
+        type: string
+      transactionDate:
+        type: string
+      transactionDetail:
+        items:
+          $ref: '#/definitions/models.TransactionDetail'
+        type: array
+    type: object
+  models.TransactionDetail:
+    properties:
+      id:
+        type: string
+      priceSell:
+        type: number
+      product:
+        $ref: '#/definitions/models.Product'
+      quantity:
+        minimum: 1
+        type: integer
+    required:
+    - quantity
+    type: object
+  models.TransactionItem:
+    properties:
+      productId:
+        type: string
+      quantity:
+        minimum: 1
+        type: integer
+    required:
+    - productId
+    - quantity
+    type: object
+  models.UpdateCustomerRequest:
+    properties:
+      address:
+        maxLength: 500
+        type: string
+      birthdate:
+        type: string
+      email:
+        maxLength: 254
+        type: string
+      fullname:
+        maxLength: 100
+        type: string
+      password:
+        maxLength: 72
+        minLength: 8
+        type: string
+      phoneNumber:
+        maxLength: 30
+        type: string
+    required:
+    - address
+    - birthdate
+    - email
+    - fullname
+    - phoneNumber
+    type: object
+host: localhost:8080
+info:
+  contact:
+    email: support@tokonyadia.com
+    name: API Support
+  description: REST API for Tokonyadia E-commerce Backend
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+  termsOfService: http://swagger.io/terms/
+  title: Tokonyadia API
+  version: "1.0"
+paths:
+  /auth/login:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Login credentials
+        in: body
+        name: credentials
+        required: true
+        schema:
+          $ref: '#/definitions/models.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.LoginResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: Authenticate a customer
+      tags:
+      - auth
+  /auth/register:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Registration data
+        in: body
+        name: customer
+        required: true
+        schema:
+          $ref: '#/definitions/models.RegisterRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.CustomerResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: Register a customer
+      tags:
+      - auth
+  /customers:
+    get:
+      parameters:
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Page size
+        in: query
+        name: pageSize
+        type: integer
+      - description: Search by fullname or email
+        in: query
+        name: search
+        type: string
+      - description: Sort by field (fullname, email, birthdate)
+        in: query
+        name: sortBy
+        type: string
+      - default: asc
+        description: Sort direction (asc, desc)
+        in: query
+        name: sortDir
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.PaginatedResponse'
+      security:
+      - BearerAuth: []
+      summary: List customers
+      tags:
+      - customers
+  /customers/{id}:
+    delete:
+      parameters:
+      - description: Customer ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.SuccessResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Delete a customer
+      tags:
+      - customers
+    get:
+      parameters:
+      - description: Customer ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Bearer token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.CustomerResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get a customer by ID
+      tags:
+      - customers
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: Customer ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Customer data
+        in: body
+        name: customer
+        required: true
+        schema:
+          $ref: '#/definitions/models.UpdateCustomerRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.SuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Update a customer
+      tags:
+      - customers
+  /products:
+    get:
+      description: Get all products with pagination, search, and sorting
+      parameters:
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Page size
+        in: query
+        name: pageSize
+        type: integer
+      - description: Search by product name
+        in: query
+        name: search
+        type: string
+      - description: Sort by field (productName, stock, productPrice)
+        in: query
+        name: sortBy
+        type: string
+      - default: asc
+        description: Sort direction (asc, desc)
+        in: query
+        name: sortDir
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.PaginatedResponse'
+      summary: Get all products
+      tags:
+      - products
+    post:
+      consumes:
+      - application/json
+      description: Create a new product (Admin only)
+      parameters:
+      - description: Product data
+        in: body
+        name: product
+        required: true
+        schema:
+          $ref: '#/definitions/models.ProductRequest'
+      - description: Bearer token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.Product'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Create a new product
+      tags:
+      - products
+  /products/{id}:
+    delete:
+      description: Delete a product by ID (Admin only)
+      parameters:
+      - description: Product ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Bearer token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.SuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Delete a product
+      tags:
+      - products
+    get:
+      description: Get product details by ID
+      parameters:
+      - description: Product ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Product'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: Get a product by ID
+      tags:
+      - products
+    put:
+      consumes:
+      - application/json
+      description: Update product details (Admin only)
+      parameters:
+      - description: Product ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Product data
+        in: body
+        name: product
+        required: true
+        schema:
+          $ref: '#/definitions/models.ProductRequest'
+      - description: Bearer token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Product'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Update a product
+      tags:
+      - products
+  /transactions:
+    get:
+      description: Get all transactions with pagination, search, and sorting. Admin
+        can see all transactions, customers can only see their own
+      parameters:
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Page size
+        in: query
+        name: pageSize
+        type: integer
+      - description: Search by customer name or email
+        in: query
+        name: search
+        type: string
+      - description: Sort by field (transactionDate, customerName)
+        in: query
+        name: sortBy
+        type: string
+      - default: asc
+        description: Sort direction (asc, desc)
+        in: query
+        name: sortDir
+        type: string
+      - description: Bearer token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.PaginatedResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get all transactions
+      tags:
+      - transactions
+    post:
+      consumes:
+      - application/json
+      description: Create a new transaction (purchase products)
+      parameters:
+      - description: Transaction data
+        in: body
+        name: transaction
+        required: true
+        schema:
+          $ref: '#/definitions/models.CreateTransactionRequest'
+      - description: Bearer token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.Transaction'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Create a new transaction
+      tags:
+      - transactions
+  /transactions/{id}:
+    get:
+      description: Get transaction details by ID
+      parameters:
+      - description: Transaction ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Bearer token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Transaction'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get a transaction by ID
+      tags:
+      - transactions
+  /transactions/customer/{customerId}:
+    get:
+      description: Get transaction history for a specific customer (Admin only)
+      parameters:
+      - description: Customer ID
+        in: path
+        name: customerId
+        required: true
+        type: string
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Page size
+        in: query
+        name: pageSize
+        type: integer
+      - description: Sort by field (transactionDate)
+        in: query
+        name: sortBy
+        type: string
+      - default: desc
+        description: Sort direction (asc, desc)
+        in: query
+        name: sortDir
+        type: string
+      - description: Bearer token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.PaginatedResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get transactions by customer ID
+      tags:
+      - transactions
+  /transactions/me:
+    get:
+      description: Get transaction history for the logged-in customer
+      parameters:
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Page size
+        in: query
+        name: pageSize
+        type: integer
+      - description: Sort by field (transactionDate)
+        in: query
+        name: sortBy
+        type: string
+      - default: desc
+        description: Sort direction (asc, desc)
+        in: query
+        name: sortDir
+        type: string
+      - description: Bearer token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.PaginatedResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get my transaction history
+      tags:
+      - transactions
+securityDefinitions:
+  BearerAuth:
+    description: Type "Bearer" followed by a space and JWT token.
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"
