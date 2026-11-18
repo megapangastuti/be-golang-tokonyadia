@@ -74,6 +74,7 @@ func main() {
 
 	// Setup router
 	router := gin.Default()
+	router.Use(middleware.CORSMiddleware(middleware.OriginsFromEnv(os.Getenv("CORS_ALLOWED_ORIGINS"))))
 
 	// Swagger documentation
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))

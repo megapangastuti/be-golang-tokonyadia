@@ -43,6 +43,29 @@ set JWT_SECRET=replace-with-a-random-secret-of-at-least-32-characters
 go run cmd/api/main.go
 ```
 
+### Access from another browser through ngrok
+
+Start the API, then open a second terminal and run:
+
+```bash
+ngrok http 8080
+```
+
+Use the HTTPS URL printed by ngrok as the frontend API base URL, for example
+`https://your-domain.ngrok-free.dev/api/v1`. Do not use `localhost:8080` in a
+frontend running on another device.
+
+Browser CORS is enabled by default for all origins so this works immediately
+with a temporary ngrok tunnel. Before sharing the API more broadly, restrict it
+to the frontend URL in `.env`:
+
+```env
+CORS_ALLOWED_ORIGINS=https://your-frontend.example.com
+```
+
+Multiple origins can be supplied as a comma-separated list. The API accepts
+Bearer tokens in the `Authorization` header; it does not use cookies.
+
 ### Build untuk Production
 
 Build untuk OS yang sama:
